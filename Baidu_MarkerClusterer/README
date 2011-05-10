@@ -1,7 +1,9 @@
-MarkerClusterer �ٶȵ�ͼ�� 2011/3 LionGG
-������http://hi.baidu.com/liongg/blog/item/44dad5395c3233e63a87ce35.html 
+﻿MarkerClusterer百度地图版 2011/3 LionGG
+适用于百度地图API 1.1版本，不再更新。新版本支持请参考百度官方Library库的相关工具。
+描述：http://hi.baidu.com/liongg/blog/item/44dad5395c3233e63a87ce35.html 
 
-�ο����ϣ�
+
+参考资料：
 http://hi.baidu.com/liongg/blog/item/23d381cbe88d17f752664f0e.html
 http://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerclusterer/
 http://gmaps-utility-library-dev.googlecode.com/svn/tags/markerclusterer/
