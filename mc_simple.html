@@ -1,0 +1,55 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>MarkerClusterer for Baidu Map Example</title>
+
+    <style type="text/css">
+        #mapDiv1 { height:400px; width:600px; margin:20px }
+		#mapDiv2 { height:400px; width:600px; margin:20px; left:620px; top:-420px;}
+    </style>
+
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=1.1"></script>	
+    <script type="text/javascript" src="https://github.com/LionGG/maps/blob/master/Baidu_MarkerClusterer/markerclusterer.js"></script>
+
+ </head>
+  <body>
+    <div id="mapDiv1"></div>
+	<div id="mapDiv2"></div>
+    <script type="text/javascript">
+        var map = new BMap.Map("mapDiv1");            
+        map.enableScrollWheelZoom();
+        var point = new BMap.Point(116.404, 39.915);   
+        map.centerAndZoom(point,4);   
+        
+        var map2 = new BMap.Map("mapDiv2");            
+        map2.enableScrollWheelZoom();
+        map2.centerAndZoom(point,4); 
+     
+         map.addEventListener("zoomend",function(){
+            map2.zoomTo(map.getZoom());
+            map2.panTo(map.getCenter());
+        });
+
+        map.addEventListener("moveend",function(){
+            map2.panTo(map.getCenter());
+        });
+        
+ 
+     
+        var markers = [];
+        var pt = null;
+        var marker = null;
+        for (var i = 0; i < 100; i++) {
+            pt = new BMap.Point(Math.random()*40+85,Math.random()*30+21);
+            marker = new BMap.Marker(pt);
+            markers.push(marker);
+            
+            var mk2 = new BMap.Marker(pt);
+            map2.addOverlay(mk2);
+        }
+        var markerClusterer = new MarkerClusterer(map, markers);
+           
+    </script>
+  </body>
+</html>
