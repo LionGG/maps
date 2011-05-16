@@ -1,0 +1,110 @@
+﻿body {
+    background: none repeat scroll 0 0 #FFFFFF;
+    font: 12px Arial, 宋体;
+    margin: 0;
+    padding: 20px 0 ;
+    text-align: center;
+}
+
+div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, input, textarea, blockquote, p {
+    margin: 0;
+    padding: 0;
+}
+
+ol, ul {
+    list-style: none outside none;
+}
+
+li {
+    list-style-type: none;
+}
+
+.header, .content, .footer {
+    clear: both;
+    margin: 0 auto;
+    width: 960px;
+}
+
+.footer {
+    color: #000000;
+    line-height: 20px;
+    text-align: center;
+}
+
+.mainContent {
+    float: right;
+    width: 720px;
+    overflow: hidden;
+}
+.subContent {
+    float: left;
+    width: 230px;
+    text-align: left;
+    position: relative;
+}
+
+.mainContent, .subContent{
+    border: 1px solid #B1C8D7;
+    height: 600px; 
+    margin: 10px 0;
+}
+
+.subContent, .aboutMe {
+    background-color: #F5F8FC;
+}
+
+.aboutMe {
+    height: 25px;
+    border: 1px solid #B1C8D7;
+}
+
+.aboutMe li {
+    color: #1E50A2;
+    padding: 4px 0;
+}
+
+.aboutMe li a {
+    color: #1E50A2;
+    padding: 0 5px;
+    text-decoration: none;
+}
+
+#mapDiv{
+    height: 100%;
+    width: 100%;
+}
+#logo{
+    margin:5px;
+}
+#fields{
+	width: 220px;
+	padding: 0 10px;
+	font-size: 14px;
+	color: #333;
+	float: left;
+}
+#infoDiv{
+	margin: 10px 0;
+	font-size: 12px;
+	color: #333;
+}
+
+#remarkDiv p{
+	font-size: 10px;
+	color: #333;
+	bottom: 5px;
+    position: absolute;
+    width: 210px;
+}
+
+#charDiv{
+	margin: 10px 0;
+	display : none;
+}
+
+#idInput{
+    border: 1px solid black;
+    padding: 2px;
+    margin: 5px;
+    width: 120px;
+}
