@@ -161,7 +161,7 @@ function addMarker(point, city, num) {
     markerArray.push(marker);
 
     var contentString = "在<strong>" + city + "</strong>捡到<strong>" + num + "</strong>粒豆子:<br />"
-			+ "<div id = iconList " + iconDetails[city] + "</div>";
+			+ "<div>" + iconDetails[city] + "</div>";
     google.maps.event.addListener(marker, 'click', function (m) {
         return function () {
             infowindow.setContent(contentString);
