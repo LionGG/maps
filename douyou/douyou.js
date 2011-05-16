@@ -205,8 +205,8 @@ function processFriends(friends) {
 
 function doIt() {
     drawInfo();
-    drawChart();
-    mapIt();          
+	mapIt();  
+    drawChart();     
 }
 
 google.load("visualization", "1", { packages: ["corechart"] });
