@@ -17,27 +17,29 @@ var MAP_PIN_CHART_URL = "http://chart.apis.google.com/chart?chst=d_map_pin_lette
 
 init();
 function init() {
-    var idInput = T.g("idInput");
-    T.event.on(idInput, "focus", function (e) {
-        T.dom.setStyle(idInput, "border", "1px solid #14568A");
-        idInput.value = "";
-    });
-    T.event.on(idInput, "blur", function (e) {
-        T.dom.setStyle(idInput, "border", "1px solid #CCCCCC");
-    });
-    T.event.on(idInput, "keydown", function (e) {
-        var event = e || windows.event;
-        if (event.keyCode === 13) {
-            T.dom.setStyle(idInput, "border", "1px solid #CCCCCC");
-            fetchUserInfo(T.string.trim(idInput.value));
-        }
-    });
-    T.event.on(T.dom.g('btnOK'), "click", function (e) {
-        T.dom.setStyle(idInput, "border", "1px solid #CCCCCC");
-        fetchUserInfo(T.string.trim(idInput.value));
-    });
+    var idInput = $("#idInput")
+    idInput
+        .bind("focus", function (e) {
+            idInput.attr("border", "1px solid #14568A").attr("value", "");
+        })
+        .bind("blur", function (e) {
+            idInput.attr("border", "1px solid #CCCCCC");
+        })
+        .bind("keydown", function (e) {
+            (e.keyCode === 13) && startDouYou();
+        });
 
-    loadMap(T.g("mapDiv"));
+    $('#btnOK')
+        .bind("click", function (e) {
+            startDouYou();
+        });
+
+    function startDouYou(){
+        idInput.attr("border", "1px solid #CCCCCC");
+        fetchUserInfo($.trim(idInput.attr("value")));
+    }
+
+    loadMap(document.getElementById("mapDiv"));
 }
 
 //从豆瓣获取数据并处理
@@ -45,8 +47,10 @@ function fetchUserInfo(userid) {
     clearLastData();
     uid = userid;
     var url = DOUBAN_API_PEOPLE + uid + "/contacts?start-index=1&max-results=2"
-        + "&alt=xd&callback=fetchFriends" + "&apikey=" + DOUBAN_API_KEY;
-    uid && T.sio.callByBrowser(url);
+        + "&alt=xd&callback=?" + "&apikey=" + DOUBAN_API_KEY;
+    uid && $.getJSON(url, function (userInfo) {
+        fetchFriends(userInfo);
+    });
 }
 
 function fetchFriends(userInfo) {
@@ -54,13 +58,15 @@ function fetchFriends(userInfo) {
     var i = 0, url = "";
     for (; i < Math.ceil(numMax / 50); i++) {
         url = DOUBAN_API_PEOPLE + uid + "/contacts?start-index=" + (i * 50 + 1) + "&max-results=50"
-            + "&alt=xd&callback=processFriends" + "&apikey=" + DOUBAN_API_KEY;
-        T.sio.callByBrowser(url);
+            + "&alt=xd&callback=?" + "&apikey=" + DOUBAN_API_KEY;
+        $.getJSON(url, function (friends) {
+            processFriends(friends);
+        });
     }
 }
 
 function processFriends(friends) {
-    T.array.each(friends.entry, function (item, i) {
+    $.each(friends.entry, function (i, item) {
         processLocation(item);
     });
     numFetch += friends.entry.length;
@@ -73,6 +79,42 @@ function visualizeYourFriends() {
     mapIt(cityDetails, iconDetails);
 }
 
+$.extend({
+    keys: function (obj) {
+        var a = [];
+        $.each(obj, function (k) { a.push(k) });
+        return a;
+    },
+    filterFormat: function (source, opts) {
+        var data = Array.prototype.slice.call(arguments,1), toString = Object.prototype.toString;
+        if(data.length){
+	        data = data.length == 1 ? 
+	    	    /* ie 下 Object.prototype.toString.call(null) == '[object Object]' */
+	    	    (opts !== null && (/\[object Array\]|\[object Object\]/.test(toString.call(opts))) ? opts : data) 
+	    	    : data;
+    	    return source.replace(/#\{(.+?)\}/g, function (match, key){
+		        var filters, replacer, i, len, func;
+		        if(!data) return '';
+	    	    filters = key.split("|");
+	    	    replacer = data[filters[0]];
+	    	    // chrome 下 typeof /a/ == 'function'
+	    	    if('[object Function]' == toString.call(replacer)){
+	    		    replacer = replacer(filters[0]/*key*/);
+	    	    }
+	    	    for(i=1,len = filters.length; i< len; ++i){
+	    		    func = baidu.string.filterFormat[filters[i]];
+	    		    if('[object Function]' == toString.call(func)){
+	    			    replacer = func(replacer);
+	    		    }
+	    	    }
+	    	    return ( ('undefined' == typeof replacer || replacer === null)? '' : replacer);
+    	    });
+        }
+        return source;
+    }
+
+})
+
 function processLocation(user) {
     if (user['db:location']) {
         //资料里有location
@@ -84,7 +126,7 @@ function processLocation(user) {
         var location = user['db:location']['$t']; //详细地址，为了地图  
         var ulink = "<a href='" + DOUBAN_PEOPLE + user['db:uid']['$t']
 					    + "' target='_blank'><img src='" + iconUrl + "' title='" + nickname + "' /></a>";
-        if (T.array.contains(T.object.keys(cityDetails), location)) {
+        if ($.inArray(location, $.keys(cityDetails)) !== -1) {
             cityDetails[location]++;
             iconDetails[location] += ulink;
         } else {
@@ -100,7 +142,7 @@ function processLocation(user) {
             isHLJorNMG(location) ? pro = location.substring(0, 3) : pro = location.substring(0, 2);
         }
 
-        T.array.contains(T.object.keys(provinceDetails), pro) ? provinceDetails[pro]++ : provinceDetails[pro] = 1;
+        ($.inArray(pro, $.keys(provinceDetails)) !== -1) ? provinceDetails[pro]++ : provinceDetails[pro] = 1;
         //若已存在，数量加1；否则新增。
     }
 }
@@ -126,18 +168,19 @@ function isHLJorNMG(location) {
 //文字统计
 function drawInfo() {
     var str = [], sum = 0, length = 0;
-    T.object.each(provinceDetails, function (value, key) {
+    $.each(provinceDetails, function (key, value) {
         str.push(key + "<span style=\"color:#389948; font-weight:bold\">" + value + "</span>");
         sum += value;
         length++;
     });
-
-    T.g('infoDiv').innerHTML = "您关注了<span style=\"color:#389948; font-weight:bold\">"
-                    + numMax + "</span>位豆友，有<span style=\"color:#389948; font-weight:bold\">"
-                    + sum + "</span>位遍布全宇宙<span style=\"color:#389948; font-weight:bold\">"
-                    + length + "</span>个地方，还有<span style=\"color:#389948; font-weight:bold\">"
-                    + (numMax - sum) + "</span>位四处飘零，求包养。<br /><br />"
-					+ str.join("，") + "。";
+    var content = "您关注了<span style=\"color:#389948; font-weight:bold\">"
+                + numMax + "</span>位豆友，有<span style=\"color:#389948; font-weight:bold\">"
+                + sum + "</span>位遍布全宇宙<span style=\"color:#389948; font-weight:bold\">"
+                + length + "</span>个地方，还有<span style=\"color:#389948; font-weight:bold\">"
+                + (numMax - sum) + "</span>位四处飘零，求包养。<br /><br />"
+	            + str.join("，") + "。";
+    //$('#infoDiv').attr("innerHTML", content);
+    document.getElementById("infoDiv").innerHTML = content;
 }
 
 //地图显示
@@ -154,16 +197,16 @@ function loadMap(mapElement) {
 function mapIt() {
     deleteOverlays();
     var handlers = [];
-    T.object.each(cityDetails, function (value, key) {
+    $.each(cityDetails, function (key, value) {
         handlers.push(
             function (num, city) {
                 return function () {
-                    geoCoderLocation(city, num);                  
+                    geoCoderLocation(city, num);
                 }
             } (value, key)
         );
     });
-    delay(600, handlers);//一分钟100次
+    delay(600, handlers); //一分钟100次
 }
 
 function geoCoderLocation(city, num) {
@@ -185,7 +228,7 @@ function addMarker(point, city, num) {
     strList.push(num);
     strList.push(numToRGB(num));
     strList.push("000000");
-    var imgUrl = T.string.filterFormat(MAP_PIN_CHART_URL, strList);
+    var imgUrl = $.filterFormat(MAP_PIN_CHART_URL, strList);
     var marker = new google.maps.Marker({
         position: point,
         map: map,
@@ -207,7 +250,7 @@ function addMarker(point, city, num) {
 
 function deleteOverlays() {
     if (markerArray) {
-        T.array.each(markerArray, function (item, i) {
+        $.each(markerArray, function (i, item) {
             item.setMap(null);
         });
         markerArray.length = 0;
@@ -258,7 +301,7 @@ function drawChart() {
     var length2 = 0; //2个的呢？
     var length3 = 0; //3个的
 
-    T.object.each(provinceDetails, function (value, key) {
+    $.each(provinceDetails, function (key, value) {
         if (value == 1) length1++;
         if (value == 2) length2++;
         if (value == 3) length3++;
@@ -268,13 +311,13 @@ function drawChart() {
     //地区大于9的话，把人数少的合并起来
     var MAX_PIE = 8;
     if (length < MAX_PIE) {
-        T.object.each(provinceDetails, function (value, key) {
+        $.each(provinceDetails, function (key, value) {
             data.addRow([key, value]);
         });
     } else {
         var length12 = length - length1 - length2 + 2;
         var flag = (length12 > MAX_PIE) ? 3 : 2;
-        T.object.each(provinceDetails, function (value, key) {
+        $.each(provinceDetails, function (key, value) {
             if (value > flag) {
                 data.addRow([key, value]);
             }
@@ -289,10 +332,12 @@ function drawChart() {
             data.addRow(["1*" + length1, 1 * length1]);
         }
     }
-    var chartDiv = T.g('chartDiv');
-    T.setStyle('chartDiv', 'display', 'block');
-    var chart = new google.visualization.PieChart(chartDiv);
+    $('#chartDiv').attr('display', 'block');
+    var chart = new google.visualization.PieChart(document.getElementById("chartDiv"));
     chart.draw(data, { width: 210, height: 200, title: '地域分布' });
 }
+
+
+
 
 
