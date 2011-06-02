@@ -35,7 +35,9 @@
 	            startDouYou();
 	        });
 	
+		var loadImg = "<img src='images/loading.gif' alt='loading'></img>";
 	    function startDouYou(){
+	    	document.getElementById("infoDiv").innerHTML = loadImg;
 	        idInput.attr("border", "1px solid #CCCCCC");
 	        fetchUserInfo($.trim(idInput.attr("value")));
 	    }
