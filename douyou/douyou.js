@@ -81,11 +81,6 @@
 	}
 	
 	$.extend({
-	    keys: function (obj) {
-	        var a = [];
-	        $.each(obj, function (k) { a.push(k) });
-	        return a;
-	    },
 	    filterFormat: function (source, opts) {
 	        var data = Array.prototype.slice.call(arguments,1), toString = Object.prototype.toString;
 	        if(data.length){
@@ -127,7 +122,7 @@
 	        var location = user['db:location']['$t']; //详细地址，为了地图  
 	        var ulink = "<a href='" + DOUBAN_PEOPLE + user['db:uid']['$t']
 						    + "' target='_blank'><img src='" + iconUrl + "' title='" + nickname + "' /></a>";
-	        if ($.inArray(location, $.keys(cityDetails)) !== -1) {
+	        if (cityDetails.hasOwnProperty(location)) {
 	            cityDetails[location]++;
 	            iconDetails[location] += ulink;
 	        } else {
@@ -143,7 +138,7 @@
 	            isHLJorNMG(location) ? pro = location.substring(0, 3) : pro = location.substring(0, 2);
 	        }
 	
-	        ($.inArray(pro, $.keys(provinceDetails)) !== -1) ? provinceDetails[pro]++ : provinceDetails[pro] = 1;
+	        (provinceDetails.hasOwnProperty(pro)) ? provinceDetails[pro]++ : provinceDetails[pro] = 1;
 	        //若已存在，数量加1；否则新增。
 	    }
 	}
@@ -200,14 +195,14 @@
 	    var handlers = [];
 	    $.each(cityDetails, function (key, value) {
 	        handlers.push(
-	            function (num, city) {
+	            function (city, num) {
 	                return function () {
 	                    geoCoderLocation(city, num);
 	                }
-	            } (value, key)
+	            } (key, value)
 	        );
 	    });
-	    delay(600, handlers); //一分钟100次
+	    delay(600, handlers); //一分钟100次左右
 	}
 	
 	function geoCoderLocation(city, num) {
@@ -266,16 +261,13 @@
 	    if (num < 40) return "990099";
 	    return "3399AA";
 	}
-	
+		
 	function delay(interval, handlers) {
-	    if (handlers) {
-	        var i = 0;
+	    if ($.isArray(handlers) && handlers.length) {	        
 	        setTimeout(function () {
-	            if (i < handlers.length) {
-	                handlers[i]();
-	                i++;
-	                setTimeout(arguments.callee, interval);
-	            }
+	        	var handler = handlers.shift();
+	        	handler();
+                handlers.length && setTimeout(arguments.callee, interval);
 	        }, interval);
 	    }
 	}
