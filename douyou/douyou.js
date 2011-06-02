@@ -195,14 +195,14 @@
 	    var handlers = [];
 	    $.each(cityDetails, function (key, value) {
 	        handlers.push(
-	            function (num, city) {
+	            function (city, num) {
 	                return function () {
 	                    geoCoderLocation(city, num);
 	                }
-	            } (value, key)
+	            } (key, value)
 	        );
 	    });
-	    delay(600, handlers); //一分钟100次
+	    delay(600, handlers); //一分钟100次左右
 	}
 	
 	function geoCoderLocation(city, num) {
@@ -261,16 +261,13 @@
 	    if (num < 40) return "990099";
 	    return "3399AA";
 	}
-	
+		
 	function delay(interval, handlers) {
-	    if (handlers) {
-	        var i = 0;
+	    if ($.isArray(handlers) && handlers.length) {	        
 	        setTimeout(function () {
-	            if (i < handlers.length) {
-	                handlers[i]();
-	                i++;
-	                setTimeout(arguments.callee, interval);
-	            }
+	        	var handler = handlers.shift();
+	        	handler();
+                handlers.length && setTimeout(arguments.callee, interval);
 	        }, interval);
 	    }
 	}
